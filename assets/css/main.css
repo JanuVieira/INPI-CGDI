@@ -9,8 +9,10 @@
     --cgdi: #f97316;
     --indent: 1.75rem;
     --tree-branch: 1.5rem;
-    --layout-margin: 7.5rem;
-    --layout-gap: 2.5rem;
+    --header-side-space: 3.75rem;
+    --inventory-side-space: 7.5rem;
+    --header-gap: 1.25rem;
+    --inventory-gap: 2.5rem;
     --layout-col-width: 72px;
 }
 
@@ -34,12 +36,22 @@ body {
 .layout-footer {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: var(--layout-gap);
-    padding-left: var(--layout-margin) !important;
-    padding-right: var(--layout-margin) !important;
     width: 100%;
     max-width: 100%;
     min-width: 0;
+}
+
+.layout-header,
+.layout-footer {
+    column-gap: var(--header-gap);
+    padding-left: var(--header-side-space) !important;
+    padding-right: var(--header-side-space) !important;
+}
+
+.layout-main {
+    column-gap: var(--inventory-gap);
+    padding-left: var(--inventory-side-space) !important;
+    padding-right: var(--inventory-side-space) !important;
 }
 
 .layout-header {
@@ -379,8 +391,10 @@ body.search-active li.node.search-keep {
 
 @media (max-width: 768px) {
     :root {
-        --layout-margin: 1.5rem;
-        --layout-gap: 1rem;
+        --header-side-space: 1rem;
+        --inventory-side-space: 2rem;
+        --header-gap: 0.75rem;
+        --inventory-gap: 1rem;
         --indent: 1.5rem;
         --tree-branch: 1.25rem;
     }
@@ -388,8 +402,10 @@ body.search-active li.node.search-keep {
 
 @media (max-width: 480px) {
     :root {
-        --layout-margin: 1rem;
-        --layout-gap: 0.75rem;
+        --header-side-space: 0.75rem;
+        --inventory-side-space: 1.5rem;
+        --header-gap: 0.5rem;
+        --inventory-gap: 0.75rem;
         --indent: 1rem;
         --tree-branch: 1rem;
     }
@@ -411,8 +427,10 @@ body.search-active li.node.search-keep {
 
 @media (max-width: 1200px) and (min-width: 769px) {
     :root {
-        --layout-margin: 2rem;
-        --layout-gap: 1.25rem;
+        --header-side-space: 1.5rem;
+        --inventory-side-space: 3rem;
+        --header-gap: 1rem;
+        --inventory-gap: 1.25rem;
         --indent: 1.75rem;
         --tree-branch: 1.5rem;
     }
