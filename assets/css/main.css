@@ -7,7 +7,7 @@
     --chip: #f3f4f6;
     --hi: #f59e0b;
     --cgdi: #f97316;
-    --indent: 72px;
+    --indent: 3rem;
     --tree-branch: 30px;
     --layout-margin: 7.5rem;
     --layout-gap: 2.5rem;
@@ -145,9 +145,10 @@ body {
 }
 
 ul {
-    margin: 7px 0 7px var(--indent);
-    padding: 0 0 0 var(--tree-branch);
+    margin: 7px 0;
+    padding: 0 0 0 calc(var(--tree-branch) + var(--indent));
     border-left: 1px solid var(--line);
+    min-width: 0;
 }
 
 ul.root {
@@ -368,7 +369,7 @@ body.search-active li.node.search-keep {
     :root {
         --layout-margin: 2rem;
         --layout-gap: 1.25rem;
-        --indent: 36px;
+        --indent: 1.5rem;
         --tree-branch: 18px;
     }
 }
@@ -377,7 +378,7 @@ body.search-active li.node.search-keep {
     :root {
         --layout-margin: 1rem;
         --layout-gap: 0.75rem;
-        --indent: 20px;
+        --indent: 0.75rem;
         --tree-branch: 10px;
     }
 
