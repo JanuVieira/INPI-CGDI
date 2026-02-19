@@ -1,0 +1,189 @@
+/* Based on Modes.light.tokens.json and Modes.dark.tokens.json.
+   Primitive collections referenced in manifest.json were not provided,
+   so the primitive values below are project fallbacks. */
+:root {
+    /* Primitive tokens - light */
+    --dt-color-neutral-light-0: #ffffff;
+    --dt-color-neutral-light-100: #f8fafc;
+    --dt-color-neutral-light-150: #fafafa;
+    --dt-color-neutral-light-200: #f3f4f6;
+    --dt-color-neutral-light-300: #e5e7eb;
+    --dt-color-neutral-light-400: #d1d5db;
+    --dt-color-neutral-light-500: #9ca3af;
+    --dt-color-neutral-light-700: #64748b;
+    --dt-color-neutral-light-800: #374151;
+    --dt-color-neutral-light-1100: #111827;
+
+    --dt-color-brand-light-200: #eef2ff;
+    --dt-color-brand-light-600: #2563eb;
+
+    --dt-color-blue-light-100: #f8fbff;
+    --dt-color-blue-light-200: #eef2ff;
+    --dt-color-blue-light-300: #c2d2ff;
+    --dt-color-blue-light-600: #2563eb;
+    --dt-color-blue-light-800: #1e3a8a;
+
+    --dt-color-green-light-200: #dcfce7;
+    --dt-color-green-light-600: #16a34a;
+    --dt-color-yellow-light-200: #fef3c7;
+    --dt-color-yellow-light-600: #f59e0b;
+    --dt-color-red-light-200: #fee2e2;
+    --dt-color-red-light-600: #dc2626;
+    --dt-color-orange-light-200: #ffedd5;
+    --dt-color-orange-light-600: #f97316;
+    --dt-color-orange-light-700: #ea580c;
+    --dt-color-purple-light-200: #ede9fe;
+    --dt-color-purple-light-600: #7c3aed;
+    --dt-color-pink-light-200: #fce7f3;
+    --dt-color-pink-light-600: #db2777;
+
+    /* Primitive tokens - dark */
+    --dt-color-neutral-dark-0: #0f172a;
+    --dt-color-neutral-dark-200: #111827;
+    --dt-color-neutral-dark-300: #1f2937;
+    --dt-color-neutral-dark-400: #334155;
+    --dt-color-neutral-dark-600: #94a3b8;
+    --dt-color-neutral-dark-800: #e2e8f0;
+    --dt-color-neutral-dark-1100: #f8fafc;
+
+    --dt-color-brand-dark-300: #1d4ed8;
+    --dt-color-brand-dark-700: #60a5fa;
+
+    --dt-color-blue-dark-300: #1e3a8a;
+    --dt-color-blue-dark-700: #93c5fd;
+    --dt-color-green-dark-300: #14532d;
+    --dt-color-green-dark-700: #86efac;
+    --dt-color-yellow-dark-300: #713f12;
+    --dt-color-yellow-dark-700: #fde68a;
+    --dt-color-red-dark-300: #7f1d1d;
+    --dt-color-red-dark-700: #fca5a5;
+    --dt-color-orange-dark-300: #7c2d12;
+    --dt-color-orange-dark-700: #fdba74;
+    --dt-color-purple-dark-300: #4c1d95;
+    --dt-color-purple-dark-700: #c4b5fd;
+    --dt-color-pink-dark-300: #831843;
+    --dt-color-pink-dark-700: #f9a8d4;
+
+    --dt-color-alpha-dark-4: rgba(15, 23, 42, 0.04);
+    --dt-color-alpha-dark-8: rgba(15, 23, 42, 0.08);
+    --dt-color-alpha-light-4: rgba(248, 250, 252, 0.04);
+    --dt-color-alpha-light-8: rgba(248, 250, 252, 0.08);
+    --dt-color-alpha-brand-4: rgba(37, 99, 235, 0.04);
+    --dt-color-alpha-brand-16: rgba(37, 99, 235, 0.16);
+    --dt-color-alpha-red-16: rgba(220, 38, 38, 0.16);
+    --dt-color-alpha-orange-6: rgba(249, 115, 22, 0.06);
+    --dt-color-alpha-yellow-8: rgba(245, 158, 11, 0.08);
+
+    /* Semantic tokens - light mode */
+    --dt-content-brand: var(--dt-color-brand-light-600);
+    --dt-content-primary: var(--dt-color-neutral-light-1100);
+    --dt-content-secondary: var(--dt-color-neutral-light-800);
+    --dt-content-tertiary: var(--dt-color-neutral-light-500);
+    --dt-content-inverse: var(--dt-color-neutral-light-0);
+    --dt-content-always-light: var(--dt-color-neutral-light-0);
+    --dt-content-always-dark: var(--dt-color-neutral-light-1100);
+
+    --dt-border-brand: var(--dt-color-brand-light-600);
+    --dt-border-primary: var(--dt-color-neutral-light-400);
+    --dt-border-secondary: var(--dt-color-neutral-light-300);
+    --dt-border-inverse: var(--dt-color-neutral-light-800);
+
+    --dt-background-brand: var(--dt-color-brand-light-600);
+    --dt-background-brand-light: var(--dt-color-brand-light-200);
+    --dt-background-primary: var(--dt-color-neutral-light-0);
+    --dt-background-secondary: var(--dt-color-neutral-light-200);
+    --dt-background-tertiary: var(--dt-color-neutral-light-300);
+    --dt-background-inverse: var(--dt-color-neutral-light-1100);
+    --dt-background-always-light: var(--dt-color-neutral-light-0);
+    --dt-background-always-dark: var(--dt-color-neutral-light-1100);
+
+    --dt-alert-information: var(--dt-color-blue-light-600);
+    --dt-alert-warning: var(--dt-color-yellow-light-600);
+    --dt-alert-error: var(--dt-color-red-light-600);
+    --dt-alert-success: var(--dt-color-green-light-600);
+    --dt-alert-information-light: var(--dt-color-blue-light-200);
+    --dt-alert-warning-light: var(--dt-color-yellow-light-200);
+    --dt-alert-error-light: var(--dt-color-red-light-200);
+    --dt-alert-success-light: var(--dt-color-green-light-200);
+
+    --dt-accent-purple: var(--dt-color-purple-light-600);
+    --dt-accent-pink: var(--dt-color-pink-light-600);
+    --dt-accent-red: var(--dt-color-red-light-600);
+    --dt-accent-orange: var(--dt-color-orange-light-600);
+    --dt-accent-yellow: var(--dt-color-yellow-light-600);
+    --dt-accent-green: var(--dt-color-green-light-600);
+    --dt-accent-blue: var(--dt-color-blue-light-600);
+    --dt-accent-purple-light: var(--dt-color-purple-light-200);
+    --dt-accent-pink-light: var(--dt-color-pink-light-200);
+    --dt-accent-red-light: var(--dt-color-red-light-200);
+    --dt-accent-orange-light: var(--dt-color-orange-light-200);
+    --dt-accent-yellow-light: var(--dt-color-yellow-light-200);
+    --dt-accent-green-light: var(--dt-color-green-light-200);
+    --dt-accent-blue-light: var(--dt-color-blue-light-200);
+
+    --dt-action-hover-on-light: var(--dt-color-alpha-dark-4);
+    --dt-action-hover-on-dark: var(--dt-color-alpha-light-4);
+    --dt-action-hover-on-color: var(--dt-color-alpha-brand-4);
+    --dt-action-disabled: var(--dt-color-neutral-light-300);
+    --dt-action-active: var(--dt-color-brand-light-600);
+    --dt-action-focus-ring-brand: var(--dt-color-alpha-brand-16);
+    --dt-action-focus-ring-neutral: var(--dt-color-alpha-dark-8);
+    --dt-action-focus-ring-error: var(--dt-color-alpha-red-16);
+}
+
+:root[data-theme="dark"] {
+    --dt-content-brand: var(--dt-color-brand-dark-700);
+    --dt-content-primary: var(--dt-color-neutral-dark-1100);
+    --dt-content-secondary: var(--dt-color-neutral-dark-800);
+    --dt-content-tertiary: var(--dt-color-neutral-dark-600);
+    --dt-content-inverse: var(--dt-color-neutral-dark-0);
+    --dt-content-always-light: var(--dt-color-neutral-dark-1100);
+    --dt-content-always-dark: var(--dt-color-neutral-dark-0);
+
+    --dt-border-brand: var(--dt-color-brand-dark-700);
+    --dt-border-primary: var(--dt-color-neutral-dark-400);
+    --dt-border-secondary: var(--dt-color-neutral-dark-300);
+    --dt-border-inverse: var(--dt-color-neutral-dark-800);
+
+    --dt-background-brand: var(--dt-color-brand-dark-700);
+    --dt-background-brand-light: var(--dt-color-brand-dark-300);
+    --dt-background-primary: var(--dt-color-neutral-dark-200);
+    --dt-background-secondary: var(--dt-color-neutral-dark-0);
+    --dt-background-tertiary: var(--dt-color-neutral-dark-300);
+    --dt-background-inverse: var(--dt-color-neutral-dark-1100);
+    --dt-background-always-light: var(--dt-color-neutral-dark-1100);
+    --dt-background-always-dark: var(--dt-color-neutral-dark-0);
+
+    --dt-alert-information: var(--dt-color-blue-dark-700);
+    --dt-alert-warning: var(--dt-color-yellow-dark-700);
+    --dt-alert-error: var(--dt-color-red-dark-700);
+    --dt-alert-success: var(--dt-color-green-dark-700);
+    --dt-alert-information-light: var(--dt-color-blue-dark-300);
+    --dt-alert-warning-light: var(--dt-color-yellow-dark-300);
+    --dt-alert-error-light: var(--dt-color-red-dark-300);
+    --dt-alert-success-light: var(--dt-color-green-dark-300);
+
+    --dt-accent-purple: var(--dt-color-purple-dark-700);
+    --dt-accent-pink: var(--dt-color-pink-dark-700);
+    --dt-accent-red: var(--dt-color-red-dark-700);
+    --dt-accent-orange: var(--dt-color-orange-dark-700);
+    --dt-accent-yellow: var(--dt-color-yellow-dark-700);
+    --dt-accent-green: var(--dt-color-green-dark-700);
+    --dt-accent-blue: var(--dt-color-blue-dark-700);
+    --dt-accent-purple-light: var(--dt-color-purple-dark-300);
+    --dt-accent-pink-light: var(--dt-color-pink-dark-300);
+    --dt-accent-red-light: var(--dt-color-red-dark-300);
+    --dt-accent-orange-light: var(--dt-color-orange-dark-300);
+    --dt-accent-yellow-light: var(--dt-color-yellow-dark-300);
+    --dt-accent-green-light: var(--dt-color-green-dark-300);
+    --dt-accent-blue-light: var(--dt-color-blue-dark-300);
+
+    --dt-action-hover-on-light: var(--dt-color-alpha-light-4);
+    --dt-action-hover-on-dark: var(--dt-color-alpha-dark-4);
+    --dt-action-hover-on-color: var(--dt-color-alpha-brand-4);
+    --dt-action-disabled: var(--dt-color-neutral-dark-300);
+    --dt-action-active: var(--dt-color-brand-dark-700);
+    --dt-action-focus-ring-brand: var(--dt-color-alpha-brand-16);
+    --dt-action-focus-ring-neutral: var(--dt-color-alpha-light-8);
+    --dt-action-focus-ring-error: var(--dt-color-alpha-red-16);
+}

@@ -3,11 +3,11 @@
       extend: {
         colors: {
           brand: {
-            line: "#e5e7eb",
-            text: "#111827",
-            muted: "#6b7280",
-            link: "#2563eb",
-            cgdi: "#f97316"
+            line: "var(--dt-border-secondary)",
+            text: "var(--dt-content-primary)",
+            muted: "var(--dt-content-tertiary)",
+            link: "var(--dt-content-brand)",
+            cgdi: "var(--dt-accent-orange)"
           }
         }
       }
