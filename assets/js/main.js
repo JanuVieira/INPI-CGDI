@@ -276,7 +276,6 @@
       title: "Pesquisas",
       html: `
         <section class="links-panel links-panel-structured" aria-label="Pesquisas do projeto">
-          <p class="links-label">pesquisa 00/00/2026</p>
           <div class="links-grid">
             <a class="links-card sheet-link-card" href="https://app.maze.co/maze-preview/mazes/499948847" target="_blank" rel="noopener noreferrer">
               <span class="sheet-file-icon" aria-hidden="true">
@@ -291,21 +290,6 @@
                   <span class="links-card-icon" aria-hidden="true">↗</span>
                 </span>
                 <span class="links-card-description">Preview: prototipo em construcao para validar arquitetura da informacao.<br>Fluxo de navegacao do NP em avaliacao.</span>
-              </span>
-            </a>
-            <a class="links-card sheet-link-card" href="https://www.figma.com/board/98PqZ126Y9RxZTZp0CH44X/INPI_Discovery?node-id=0-1&t=J8Q503lPuDXMFS1F-1" target="_blank" rel="noopener noreferrer">
-              <span class="sheet-file-icon" aria-hidden="true">
-                <svg class="sheet-file-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-                  <rect x="4" y="3" width="16" height="18" rx="2"></rect>
-                  <path d="M4 9h16M10 9v12M15 9v12"></path>
-                </svg>
-              </span>
-              <span class="sheet-content">
-                <span class="sheet-title-group">
-                  <span class="links-card-title">Discovery</span>
-                  <span class="links-card-icon" aria-hidden="true">↗</span>
-                </span>
-                <span class="links-card-description">Board com achados, hipoteses e direcionamentos da pesquisa.</span>
               </span>
             </a>
           </div>
