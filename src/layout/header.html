@@ -1,26 +1,20 @@
-<header class="site-header-component layout-header sticky top-0 z-10 flex flex-wrap items-center gap-5 border-b border-brand-line bg-white px-3 py-2.5 lg:flex-nowrap">
-    <div class="header-left flex w-full flex-wrap items-center gap-1 sm:gap-2 lg:w-auto">
-        <a class="menu-link rounded-lg px-2.5 py-2 text-sm leading-none text-brand-text transition hover:bg-slate-100 hover:text-brand-link" href="#" role="button" data-panel="sobre">Sobre</a>
-        <a class="menu-link rounded-lg px-2.5 py-2 text-sm leading-none text-brand-text transition hover:bg-slate-100 hover:text-brand-link" href="#" role="button" data-panel="analises">Análises</a>
-        <a class="menu-link rounded-lg px-2.5 py-2 text-sm leading-none text-brand-text transition hover:bg-slate-100 hover:text-brand-link" href="#" role="button" data-panel="item">Planilha</a>
-        <a class="menu-link rounded-lg px-2.5 py-2 text-sm leading-none text-brand-text transition hover:bg-slate-100 hover:text-brand-link" href="#" role="button" data-panel="planilhas">Item</a>
-        <a class="menu-link rounded-lg px-2.5 py-2 text-sm leading-none text-brand-text transition hover:bg-slate-100 hover:text-brand-link" href="#" role="button" data-panel="relatorios-mensais">Relatórios mensais</a>
-    </div>
-    <div class="header-center order-3 h-0 w-full lg:order-none lg:h-auto lg:flex-1"></div>
-    <div class="header-right ml-0 flex w-full items-center gap-3 lg:ml-auto lg:w-auto">
-        <div class="search-box flex w-full items-center overflow-hidden rounded-lg border border-slate-300 bg-white transition hover:bg-slate-50 lg:w-auto">
-            <select id="search-mode" class="border-r border-slate-200 bg-transparent px-2.5 py-2 text-sm text-slate-700 outline-none" aria-label="Modo da busca">
-                <option value="content">Conteúdo</option>
-                <option value="tags">Tags</option>
-            </select>
-            <input id="search" class="w-full min-w-[120px] bg-transparent px-2.5 py-2 text-sm outline-none lg:w-64" placeholder="Buscar..."/>
-        </div>
-        <button id="expand" class="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm transition hover:bg-slate-100">Expandir tudo</button>
-        <button id="collapse" class="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm transition hover:bg-slate-100">Recolher tudo</button>
-        <label class="cgdi-switch" for="cgdi">
-            <span>CGDI</span>
-            <input id="cgdi" type="checkbox" role="switch" aria-label="Ativar modo CGDI"/>
-            <span class="slider" aria-hidden="true"></span>
-        </label>
-    </div>
+<!-- Cabecalho -->
+<header class="site-header-component">
+    <p class="site-header-title">CDGI - PROJ. DSGN UX/UI</p>
+    <nav class="header-nav" aria-label="Menu principal">
+        <ul class="header-nav-list">
+            <li><a class="header-nav-link" href="#" data-panel="sobre" aria-controls="menu-sidebar">Sobre</a></li>
+            <li><a class="header-nav-link" href="#" data-panel="planilhas" aria-controls="menu-sidebar">Planilhas</a></li>
+            <li><a class="header-nav-link" href="#" data-panel="analise" aria-controls="menu-sidebar">Análise</a></li>
+            <li><a class="header-nav-link" href="#" data-panel="agendar-reuniao" aria-controls="menu-sidebar">Agendar reunião</a></li>
+        </ul>
+    </nav>
 </header>
+<div id="menu-backdrop" class="menu-backdrop" aria-hidden="true"></div>
+<aside id="menu-sidebar" class="menu-sidebar" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="menu-sidebar-title">
+    <div class="menu-sidebar-header">
+        <h2 id="menu-sidebar-title" class="menu-sidebar-title">Menu</h2>
+        <button id="menu-sidebar-close" class="menu-sidebar-close" type="button" aria-label="Fechar barra lateral">Fechar</button>
+    </div>
+    <div id="menu-sidebar-body" class="menu-sidebar-body"></div>
+</aside>

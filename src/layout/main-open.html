@@ -1,3 +1,28 @@
-<main class="inventory-component layout-main p-4">
-    <h1 class="mb-2.5 text-lg font-semibold">Inventario de conteudo - Site INPI</h1>
-    <ul class="root">
+<!-- Area principal: titulo + busca, acoes, arvore -->
+<main class="inventory-component">
+    <section class="inventory-toolbar" aria-label="Controles do inventario">
+        <div class="inventory-toolbar-top">
+            <h1 class="inventory-title">Inventario de conteudo - Site INPI</h1>
+            <div class="search-box" role="search">
+                <label class="sr-only" for="search-mode">Modo da busca</label>
+                <select id="search-mode" aria-label="Modo da busca">
+                    <option value="content">Conteudo</option>
+                    <option value="tags">Tags</option>
+                </select>
+                <input id="search" placeholder="Buscar..."/>
+            </div>
+        </div>
+        <div class="inventory-toolbar-actions">
+            <div class="toolbar-buttons">
+                <button id="expand" class="toolbar-button" type="button">Expandir tudo</button>
+                <button id="collapse" class="toolbar-button" type="button">Recolher tudo</button>
+            </div>
+            <label class="cgdi-switch" for="cgdi">
+                <span>Mostrar somente paginas CGDI</span>
+                <input id="cgdi" type="checkbox" role="switch" aria-label="Ativar filtro CGDI"/>
+                <span class="slider" aria-hidden="true"></span>
+            </label>
+        </div>
+    </section>
+    <section class="inventory-tree" aria-label="Arvore de conteudo">
+        <ul class="root">

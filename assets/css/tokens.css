@@ -1,8 +1,8 @@
-/* Based on Modes.light.tokens.json and Modes.dark.tokens.json.
-   Primitive collections referenced in manifest.json were not provided,
-   so the primitive values below are project fallbacks. */
+/* Baseado em Modes.light.tokens.json e Modes.dark.tokens.json.
+   Como as colecoes primitivas do manifest.json nao foram fornecidas,
+   os valores primitivos abaixo funcionam como fallback do projeto. */
 :root {
-    /* Primitive tokens - light */
+    /* Tokens primitivos - tema claro */
     --dt-color-neutral-light-0: #ffffff;
     --dt-color-neutral-light-100: #f8fafc;
     --dt-color-neutral-light-150: #fafafa;
@@ -37,7 +37,7 @@
     --dt-color-pink-light-200: #fce7f3;
     --dt-color-pink-light-600: #db2777;
 
-    /* Primitive tokens - dark */
+    /* Tokens primitivos - tema escuro */
     --dt-color-neutral-dark-0: #0f172a;
     --dt-color-neutral-dark-200: #111827;
     --dt-color-neutral-dark-300: #1f2937;
@@ -74,7 +74,7 @@
     --dt-color-alpha-orange-6: rgba(249, 115, 22, 0.06);
     --dt-color-alpha-yellow-8: rgba(245, 158, 11, 0.08);
 
-    /* Semantic tokens - light mode */
+    /* Tokens semanticos - modo claro */
     --dt-content-brand: var(--dt-color-brand-light-600);
     --dt-content-primary: var(--dt-color-neutral-light-1100);
     --dt-content-secondary: var(--dt-color-neutral-light-800);
@@ -132,6 +132,7 @@
 }
 
 :root[data-theme="dark"] {
+    /* Tokens semanticos sobrescritos para modo escuro */
     --dt-content-brand: var(--dt-color-brand-dark-700);
     --dt-content-primary: var(--dt-color-neutral-dark-1100);
     --dt-content-secondary: var(--dt-color-neutral-dark-800);
