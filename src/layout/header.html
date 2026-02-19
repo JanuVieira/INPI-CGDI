@@ -5,7 +5,9 @@
         <ul class="header-nav-list">
             <li><a class="header-nav-link" href="#" data-panel="sobre" aria-controls="menu-sidebar">Sobre</a></li>
             <li><a class="header-nav-link" href="#" data-panel="planilhas" aria-controls="menu-sidebar">Planilhas</a></li>
+            <li><a class="header-nav-link" href="#" data-panel="pesquisas" aria-controls="menu-sidebar">Pesquisas</a></li>
             <li><a class="header-nav-link" href="#" data-panel="analise" aria-controls="menu-sidebar">Análise</a></li>
+            <li><a class="header-nav-link" href="#" data-panel="links" aria-controls="menu-sidebar">Prototipo</a></li>
             <li><a class="header-nav-link" href="#" data-panel="agendar-reuniao" aria-controls="menu-sidebar">Agendar reunião</a></li>
         </ul>
     </nav>
@@ -14,7 +16,12 @@
 <aside id="menu-sidebar" class="menu-sidebar" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="menu-sidebar-title">
     <div class="menu-sidebar-header">
         <h2 id="menu-sidebar-title" class="menu-sidebar-title">Menu</h2>
-        <button id="menu-sidebar-close" class="menu-sidebar-close" type="button" aria-label="Fechar barra lateral">Fechar</button>
+        <button id="menu-sidebar-close" class="menu-sidebar-close" type="button" aria-label="Fechar barra lateral">
+            <span class="menu-sidebar-close-icon" aria-hidden="true">&times;</span>
+        </button>
     </div>
     <div id="menu-sidebar-body" class="menu-sidebar-body"></div>
+    <div class="menu-sidebar-footer">
+        <button id="menu-sidebar-footer-close" class="menu-sidebar-footer-close" type="button">Fechar janela</button>
+    </div>
 </aside>
