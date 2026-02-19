@@ -27,8 +27,8 @@
     --text-analysis-secondary: var(--dt-color-neutral-light-500);
     --text-analysis-tertiary: var(--dt-color-neutral-light-500);
     --surface-form-bg: var(--dt-color-neutral-light-150);
-    --indent: 1.75rem;
-    --tree-branch: 1.5rem;
+    --indent: 1.5rem;
+    --tree-branch: 1.25rem;
     --page-max-width: 1200px;
     --page-padding-inline: clamp(1rem, 3vw, 3.75rem);
     --stack-gap-lg: clamp(1rem, 2vw, 1.5rem);
@@ -737,40 +737,40 @@ body.menu-open {
 }
 
 /* Estrutura da arvore de navegacao */
-ul {
-    margin: 7px 0;
+.inventory-tree ul {
+    margin: 6px 0;
     padding: 0 0 0 calc(var(--tree-branch) + var(--indent));
     border-left: 1px solid var(--line);
     min-width: 0;
 }
 
-ul.root {
+.inventory-tree ul.root {
     margin-left: 0;
     padding-left: 0;
     border-left: none;
 }
 
-li {
+.inventory-tree li {
     margin: 3px 0;
     list-style: none;
     position: relative;
 }
 
-ul:not(.root) > li::before {
+.inventory-tree ul:not(.root) > li::before {
     content: "";
     position: absolute;
     left: calc(var(--tree-branch) * -1);
-    top: 16px;
+    top: 14px;
     width: var(--tree-branch);
     border-top: 1px solid var(--line);
 }
 
-details > summary {
+.inventory-tree details > summary {
     cursor: pointer;
     list-style: none;
 }
 
-details > summary::-webkit-details-marker {
+.inventory-tree details > summary::-webkit-details-marker {
     display: none;
 }
 
@@ -952,8 +952,8 @@ body.search-active li.node.search-keep {
 @media (max-width: 768px) {
     :root {
         --page-padding-inline: 1rem;
-        --indent: 1.5rem;
-        --tree-branch: 1.25rem;
+        --indent: 1.25rem;
+        --tree-branch: 1rem;
     }
 }
 
@@ -961,8 +961,8 @@ body.search-active li.node.search-keep {
 @media (max-width: 480px) {
     :root {
         --page-padding-inline: 0.75rem;
-        --indent: 1rem;
-        --tree-branch: 1rem;
+        --indent: 0.875rem;
+        --tree-branch: 0.875rem;
     }
 
     .row {
