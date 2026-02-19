@@ -7,8 +7,8 @@
     --chip: #f3f4f6;
     --hi: #f59e0b;
     --cgdi: #f97316;
-    --indent: 3rem;
-    --tree-branch: 30px;
+    --indent: 1.75rem;
+    --tree-branch: 1.5rem;
     --layout-margin: 7.5rem;
     --layout-gap: 2.5rem;
     --layout-col-width: 72px;
@@ -39,6 +39,7 @@ body {
     padding-right: var(--layout-margin) !important;
     width: 100%;
     max-width: 100%;
+    min-width: 0;
 }
 
 .layout-header {
@@ -185,7 +186,7 @@ details > summary::-webkit-details-marker {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    align-items: flex-start;
+    align-items: center;
     padding: 5px 8px;
     border-radius: 10px;
     min-height: 28px;
@@ -201,7 +202,7 @@ details > summary::-webkit-details-marker {
     word-break: break-word;
     overflow-wrap: anywhere;
     min-width: 0;
-    flex: 1 1 220px;
+    flex: 0 1 auto;
 }
 
 .meta {
@@ -210,7 +211,7 @@ details > summary::-webkit-details-marker {
     background: var(--chip);
     padding: 2px 8px;
     border-radius: 999px;
-    margin-right: 14px;
+    margin-right: 0;
     white-space: nowrap;
 }
 
@@ -307,6 +308,7 @@ body.search-active li.node.search-keep {
 
 .menu-sidebar {
     overflow: hidden;
+    max-width: 100vw;
 }
 
 .menu-sidebar-body {
@@ -324,6 +326,16 @@ body.search-active li.node.search-keep {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.row-right {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
     flex-wrap: wrap;
     min-width: 0;
 }
@@ -367,10 +379,10 @@ body.search-active li.node.search-keep {
 
 @media (max-width: 768px) {
     :root {
-        --layout-margin: 2rem;
-        --layout-gap: 1.25rem;
+        --layout-margin: 1.5rem;
+        --layout-gap: 1rem;
         --indent: 1.5rem;
-        --tree-branch: 18px;
+        --tree-branch: 1.25rem;
     }
 }
 
@@ -378,8 +390,8 @@ body.search-active li.node.search-keep {
     :root {
         --layout-margin: 1rem;
         --layout-gap: 0.75rem;
-        --indent: 0.75rem;
-        --tree-branch: 10px;
+        --indent: 1rem;
+        --tree-branch: 1rem;
     }
 
     .row {
@@ -388,6 +400,21 @@ body.search-active li.node.search-keep {
 
     .name {
         flex-basis: 100%;
+    }
+
+    .row-right {
+        width: 100%;
+        justify-content: flex-start;
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 1200px) and (min-width: 769px) {
+    :root {
+        --layout-margin: 2rem;
+        --layout-gap: 1.25rem;
+        --indent: 1.75rem;
+        --tree-branch: 1.5rem;
     }
 }
 
