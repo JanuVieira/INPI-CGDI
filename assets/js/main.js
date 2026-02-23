@@ -29,124 +29,262 @@
   const menuSidebarClose = document.getElementById("menu-sidebar-close");
   const menuSidebarFooterClose = document.getElementById("menu-sidebar-footer-close");
 
-  function formatMetric(value) {
-    return new Intl.NumberFormat("pt-BR").format(value);
-  }
-
-  function getNodeDepth(li) {
-    let depth = 1;
-    let current = li.parentElement?.closest("li.node");
-    while (current) {
-      depth += 1;
-      current = current.parentElement?.closest("li.node");
-    }
-    return depth;
-  }
-
-  function buildAnalysisStats() {
-    const nodes = Array.from(document.querySelectorAll("li.node"));
-    const leaves = nodes.filter((li) => li.classList.contains("leaf"));
-    const links = document.querySelectorAll("li.node a.go");
-    const noLinks = document.querySelectorAll("li.node .nolink");
-    const detailsNodes = Array.from(document.querySelectorAll("details"));
-    const openDetails = detailsNodes.filter((details) => details.open);
-    let markedIds = new Set();
-    let tagsMap = {};
-    try {
-      const markedRaw = localStorage.getItem("cgdi_marked_ids_v1");
-      markedIds = new Set(markedRaw ? JSON.parse(markedRaw) : []);
-    } catch (e) {
-      markedIds = new Set();
-    }
-    try {
-      const tagsRaw = localStorage.getItem("node_free_tags_v1");
-      tagsMap = tagsRaw ? JSON.parse(tagsRaw) : {};
-    } catch (e) {
-      tagsMap = {};
-    }
-    const tagsEntries = Object.values(tagsMap).filter((tags) => Array.isArray(tags) && tags.length > 0);
-    const maxDepth = nodes.reduce((max, li) => Math.max(max, getNodeDepth(li)), 0);
-
-    return {
-      totalNodes: nodes.length,
-      leafNodes: leaves.length,
-      branchNodes: Math.max(nodes.length - leaves.length, 0),
-      linkedNodes: links.length,
-      noLinkNodes: noLinks.length,
-      cgdiNodes: markedIds.size,
-      taggedNodes: tagsEntries.length,
-      totalTags: tagsEntries.reduce((sum, tags) => sum + tags.length, 0),
-      openDetails: openDetails.length,
-      depth: maxDepth
-    };
-  }
-
   function renderAnalysisDashboard() {
-    const stats = buildAnalysisStats();
-    const coverage = stats.totalNodes > 0
-      ? Math.round((stats.linkedNodes / stats.totalNodes) * 100)
-      : 0;
-    const cgdiCoverage = stats.totalNodes > 0
-      ? Math.round((stats.cgdiNodes / stats.totalNodes) * 100)
-      : 0;
-
     return `
-      <section class="analysis-dashboard analysis-dashboard-numbers" aria-label="Dashboard numerico">
-        <p class="analysis-label">Indicadores atuais</p>
-        <div class="analysis-number-grid">
-          <article class="analysis-number-card">
-            <p class="analysis-number-value">${formatMetric(stats.totalNodes)}</p>
-            <p class="analysis-number-label">Nos mapeados</p>
-            <p class="analysis-number-caption">Total de registros presentes na arvore.</p>
+      <section class="analysis-dashboard analysis-dashboard-master" aria-label="Dashboard de analise">
+        <section class="analysis-theme analysis-theme-volume" aria-label="Sessao volume e composicao">
+          <div class="analysis-theme-head">
+            <h3 class="analysis-theme-title">1. Volume e composicao</h3>
+          </div>
+          <div class="links-panel links-panel-structured analysis-highlights-panel">
+            <div class="analysis-highlights-grid">
+              <article class="links-card sheet-link-card analysis-highlight-card analysis-highlight-card-prominent">
+                <span class="sheet-file-icon analysis-highlight-icon" aria-hidden="true"><span>URL</span></span>
+                <span class="sheet-content">
+                  <span class="sheet-title-group"><span class="links-card-title">Total de URLs</span></span>
+                  <span class="analysis-highlight-value">15.608</span>
+                  <span class="links-card-description">(todas unicas)</span>
+                </span>
+              </article>
+            </div>
+          </div>
+          <article class="analysis-card analysis-panel-card">
+            <div class="analysis-panel-head">
+              <p class="analysis-panel-title">Distribuicao principal</p>
+            </div>
+            <div class="analysis-hbars">
+              <div class="analysis-hbar-row">
+                <p class="analysis-hbar-label analysis-hbar-label-split"><span>Paginas</span><span>9.850 (63,1%)</span></p>
+                <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 63.1;"></span></span>
+              </div>
+              <div class="analysis-hbar-row">
+                <p class="analysis-hbar-label analysis-hbar-label-split"><span>Arquivos</span><span>5.758 (36,9%)</span></p>
+                <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 36.9;"></span></span>
+              </div>
+            </div>
           </article>
-          <article class="analysis-number-card">
-            <p class="analysis-number-value">${formatMetric(stats.leafNodes)}</p>
-            <p class="analysis-number-label">Paginas finais</p>
-            <p class="analysis-number-caption">Nos folha, sem filhos abaixo.</p>
-          </article>
-          <article class="analysis-number-card">
-            <p class="analysis-number-value">${formatMetric(stats.branchNodes)}</p>
-            <p class="analysis-number-label">Secoes</p>
-            <p class="analysis-number-caption">Nos estruturais com desdobramento.</p>
-          </article>
-          <article class="analysis-number-card">
-            <p class="analysis-number-value">${formatMetric(stats.linkedNodes)}</p>
-            <p class="analysis-number-label">Nos com URL</p>
-            <p class="analysis-number-caption">${formatMetric(coverage)}% da arvore com destino definido.</p>
-          </article>
-          <article class="analysis-number-card">
-            <p class="analysis-number-value">${formatMetric(stats.noLinkNodes)}</p>
-            <p class="analysis-number-label">Nos sem URL</p>
-            <p class="analysis-number-caption">Itens sem link de destino publicado.</p>
-          </article>
-          <article class="analysis-number-card">
-            <p class="analysis-number-value">${formatMetric(stats.cgdiNodes)}</p>
-            <p class="analysis-number-label">Marcados CGDI</p>
-            <p class="analysis-number-caption">${formatMetric(cgdiCoverage)}% do total de nos.</p>
-          </article>
-          <article class="analysis-number-card">
-            <p class="analysis-number-value">${formatMetric(stats.totalTags)}</p>
-            <p class="analysis-number-label">Tags aplicadas</p>
-            <p class="analysis-number-caption">${formatMetric(stats.taggedNodes)} nos com classificacao manual.</p>
-          </article>
-          <article class="analysis-number-card">
-            <p class="analysis-number-value">${formatMetric(stats.openDetails)}</p>
-            <p class="analysis-number-label">Nos expandidos</p>
-            <p class="analysis-number-caption">Estado atual de expansao na interface.</p>
-          </article>
-          <article class="analysis-number-card">
-            <p class="analysis-number-value">${formatMetric(stats.depth)}</p>
-            <p class="analysis-number-label">Profundidade maxima</p>
-            <p class="analysis-number-caption">Maior nivel hierarquico encontrado.</p>
-          </article>
-        </div>
-        <section class="analysis-notes-block" aria-labelledby="analysis-notes-title">
-          <h3 id="analysis-notes-title" class="analysis-notes-title">Analise</h3>
-          <p class="analysis-notes-text">Espaco reservado para avaliacao qualitativa dos dados, riscos e prioridades de revisao.</p>
         </section>
-        <section class="analysis-notes-block" aria-labelledby="analysis-insights-title">
-          <h3 id="analysis-insights-title" class="analysis-notes-title">Insights</h3>
-          <p class="analysis-notes-text">Espaco reservado para conclusoes e recomendacoes acionaveis a partir dos indicadores acima.</p>
+
+        <section class="analysis-theme" aria-label="Sessao formatos de arquivo">
+          <div class="analysis-theme-head">
+            <h3 class="analysis-theme-title">2. Formatos de arquivo</h3>
+          </div>
+          <article class="analysis-card analysis-panel-card">
+            <div class="analysis-panel-head">
+              <p class="analysis-panel-title">PDF, XLS, DOCX, XLSX e CSV</p>
+            </div>
+            <div class="analysis-hbars">
+              <div class="analysis-hbar-row">
+                <p class="analysis-hbar-label analysis-hbar-label-split"><span>PDF</span><span>5.516</span></p>
+                <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 95.8;"></span></span>
+              </div>
+              <div class="analysis-hbar-row">
+                <p class="analysis-hbar-label analysis-hbar-label-split"><span>XLS</span><span>137</span></p>
+                <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 2.4;"></span></span>
+              </div>
+              <div class="analysis-hbar-row">
+                <p class="analysis-hbar-label analysis-hbar-label-split"><span>DOCX</span><span>52</span></p>
+                <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 0.9;"></span></span>
+              </div>
+              <div class="analysis-hbar-row">
+                <p class="analysis-hbar-label analysis-hbar-label-split"><span>XLSX</span><span>45</span></p>
+                <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 0.78;"></span></span>
+              </div>
+              <div class="analysis-hbar-row">
+                <p class="analysis-hbar-label analysis-hbar-label-split"><span>CSV</span><span>6</span></p>
+                <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 0.1;"></span></span>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="analysis-theme" aria-label="Sessao idiomas">
+          <div class="analysis-theme-head">
+            <h3 class="analysis-theme-title">3. Idiomas</h3>
+          </div>
+          <article class="analysis-card analysis-panel-card">
+            <div class="analysis-hbars">
+                <div class="analysis-hbar-row">
+                  <p class="analysis-hbar-label analysis-hbar-label-split"><span>PT</span><span>14.123 (90,5%)</span></p>
+                  <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 90.5;"></span></span>
+                </div>
+                <div class="analysis-hbar-row">
+                  <p class="analysis-hbar-label analysis-hbar-label-split"><span>ES</span><span>744 (4,8%)</span></p>
+                  <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 4.8;"></span></span>
+                </div>
+                <div class="analysis-hbar-row">
+                  <p class="analysis-hbar-label analysis-hbar-label-split"><span>EN</span><span>741 (4,7%)</span></p>
+                  <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 4.7;"></span></span>
+                </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="analysis-theme" aria-label="Sessao arquitetura e profundidade">
+          <div class="analysis-theme-head">
+            <h3 class="analysis-theme-title">4. Arquitetura e profundidade</h3>
+          </div>
+          <div class="analysis-panel-grid">
+            <article class="analysis-card analysis-panel-card">
+              <div class="analysis-panel-head">
+                <p class="analysis-panel-title">Indicadores de profundidade</p>
+              </div>
+              <div class="analysis-kpi-table">
+                <article class="analysis-kpi-row">
+                  <p class="analysis-kpi-row-top"><span class="analysis-kpi-row-label">Profundidade maxima</span></p>
+                  <p class="analysis-kpi-row-value">11 niveis</p>
+                </article>
+                <article class="analysis-kpi-row">
+                  <p class="analysis-kpi-row-top"><span class="analysis-kpi-row-label">Profundidade media</span></p>
+                  <p class="analysis-kpi-row-value">6,69 niveis</p>
+                </article>
+              </div>
+            </article>
+
+            <article class="analysis-card analysis-panel-card">
+              <div class="analysis-panel-head">
+                <p class="analysis-panel-title">Camadas de acesso</p>
+              </div>
+              <section class="analysis-panel-chart" aria-label="Acessibilidade por profundidade">
+                <div class="analysis-hbars">
+                  <div class="analysis-hbar-row">
+                    <p class="analysis-hbar-label analysis-hbar-label-split"><span>URLs em nivel &lt;= 4</span><span>344 (2,2%)</span></p>
+                    <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 2.2;"></span></span>
+                  </div>
+                  <div class="analysis-hbar-row">
+                    <p class="analysis-hbar-label analysis-hbar-label-split"><span>URLs em nivel &gt;= 7</span><span>8.880 (56,89%)</span></p>
+                    <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 56.89;"></span></span>
+                  </div>
+                </div>
+              </section>
+              <p class="analysis-note-text">Apenas 344 URLs em nivel &lt;= 4 (paginas rasas). Apenas 2,2% do site e acessivel em poucos cliques.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="analysis-theme" aria-label="Sessao tipo estrutural">
+          <div class="analysis-theme-head">
+            <h3 class="analysis-theme-title">5. Tipo estrutural</h3>
+          </div>
+          <div class="analysis-type-grid">
+            <article class="analysis-card analysis-panel-card analysis-type-card">
+              <div class="analysis-panel-head">
+                <p class="analysis-panel-title">Folha</p>
+              </div>
+              <p class="analysis-type-value-line">
+                <span class="analysis-highlight-value">6.588</span>
+                <span class="analysis-type-share">(42,2%)</span>
+              </p>
+              <span class="analysis-type-track" aria-hidden="true"><span class="analysis-type-fill" style="--value: 42.2;"></span></span>
+            </article>
+
+            <article class="analysis-card analysis-panel-card analysis-type-card">
+              <div class="analysis-panel-head">
+                <p class="analysis-panel-title">Intermediaria</p>
+              </div>
+              <p class="analysis-type-value-line">
+                <span class="analysis-highlight-value">3.147</span>
+                <span class="analysis-type-share">(20,2%)</span>
+              </p>
+              <span class="analysis-type-track" aria-hidden="true"><span class="analysis-type-fill" style="--value: 20.2;"></span></span>
+            </article>
+
+            <article class="analysis-card analysis-panel-card analysis-type-card">
+              <div class="analysis-panel-head">
+                <p class="analysis-panel-title">Hub</p>
+              </div>
+              <p class="analysis-type-value-line">
+                <span class="analysis-highlight-value">115</span>
+                <span class="analysis-type-share">(0,7%)</span>
+              </p>
+              <span class="analysis-type-track" aria-hidden="true"><span class="analysis-type-fill" style="--value: 0.7;"></span></span>
+            </article>
+
+          </div>
+          <article class="analysis-card analysis-panel-card analysis-type-insights">
+            <div class="analysis-type-insight-item">
+              <p class="analysis-note-title">Folha</p>
+              <p class="analysis-note-text">Maior grupo estrutural do site. Representa paginas finais (destino do usuario). Indica forte foco em conteudo conclusivo.</p>
+            </div>
+            <div class="analysis-type-insight-item">
+              <p class="analysis-note-title">Intermediaria</p>
+              <p class="analysis-note-text">Camada de organizacao e navegacao. Atua como ponte entre hubs e folhas. Representa cerca de 1/5 da estrutura.</p>
+            </div>
+            <div class="analysis-type-insight-item">
+              <p class="analysis-note-title">Hub</p>
+              <p class="analysis-note-text">Volume muito baixo. Pouca centralizacao tematica. Indica baixa concentracao estrategica de autoridade.</p>
+            </div>
+          </article>
+        </section>
+
+        <section class="analysis-theme" aria-label="Sessao ranking secoes">
+          <div class="analysis-theme-head">
+            <h3 class="analysis-theme-title">6. Ranking das maiores secoes</h3>
+          </div>
+          <article class="analysis-card analysis-panel-card">
+            <div class="analysis-hbars">
+              <div class="analysis-hbar-row">
+                <p class="analysis-hbar-label analysis-hbar-label-split"><span>central-de-conteudo</span><span>4.892 URLs</span></p>
+                <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 100;"></span></span>
+              </div>
+              <div class="analysis-hbar-row">
+                <p class="analysis-hbar-label analysis-hbar-label-split"><span>servicos</span><span>4.775 URLs</span></p>
+                <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 97.6;"></span></span>
+              </div>
+              <div class="analysis-hbar-row">
+                <p class="analysis-hbar-label analysis-hbar-label-split"><span>projetos-estrategicos</span><span>910 URLs</span></p>
+                <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 18.6;"></span></span>
+              </div>
+              <div class="analysis-hbar-row">
+                <p class="analysis-hbar-label analysis-hbar-label-split"><span>governanca</span><span>887 URLs</span></p>
+                <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 18.1;"></span></span>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="analysis-theme" aria-label="Sessao SEO e imagens">
+          <div class="analysis-theme-head">
+            <h3 class="analysis-theme-title">7. SEO e qualidade de conteudo</h3>
+          </div>
+          <div class="analysis-panel-grid">
+            <article class="analysis-card analysis-panel-card">
+              <div class="analysis-panel-head">
+                <p class="analysis-panel-title">SEO tecnico</p>
+              </div>
+              <div class="analysis-hbars">
+                <div class="analysis-hbar-row">
+                  <p class="analysis-hbar-label analysis-hbar-label-split"><span>Paginas com &lt;title&gt; preenchido</span><span>34,87%</span></p>
+                  <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 34.87;"></span></span>
+                </div>
+                <div class="analysis-hbar-row">
+                  <p class="analysis-hbar-label analysis-hbar-label-split"><span>Paginas com H1 preenchido</span><span>30,96%</span></p>
+                  <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 30.96;"></span></span>
+                </div>
+                <div class="analysis-hbar-row">
+                  <p class="analysis-hbar-label analysis-hbar-label-split"><span>Paginas com Meta Description</span><span>0,73%</span></p>
+                  <span class="analysis-hbar-track"><span class="analysis-hbar-fill" style="--value: 0.73;"></span></span>
+                </div>
+              </div>
+            </article>
+
+            <article class="analysis-card analysis-panel-card">
+              <div class="analysis-panel-head">
+                <p class="analysis-panel-title">Midias: imagens</p>
+              </div>
+              <div class="analysis-kpi-table">
+                <article class="analysis-kpi-row">
+                  <p class="analysis-kpi-row-top"><span class="analysis-kpi-row-label">Volume de imagens</span></p>
+                  <p class="analysis-kpi-row-value">5.405</p>
+                </article>
+                <article class="analysis-kpi-row">
+                  <p class="analysis-kpi-row-top"><span class="analysis-kpi-row-label">Imagens sem legenda/caption</span></p>
+                  <p class="analysis-kpi-row-value">2.897 (~55%)</p>
+                </article>
+              </div>
+            </article>
+          </div>
+          <p class="analysis-session-note">Forte quebra de acessibilidade (WCAG) e perda de SEO visual. Acao: politica de alt text.</p>
         </section>
       </section>
     `;
@@ -298,7 +436,7 @@
     },
     analise: {
       title: "Analise",
-      paragraphs: []
+      render: renderAnalysisDashboard
     },
     links: {
       title: "Prototipo",
