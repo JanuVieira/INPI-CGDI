@@ -545,21 +545,103 @@
   const allDetails = Array.from(document.querySelectorAll("details"));
   const expandButton = document.getElementById("expand");
   const collapseButton = document.getElementById("collapse");
+  const DETAILS_BATCH_SIZE = 320;
+  const scheduleFrame = window.requestAnimationFrame
+    ? window.requestAnimationFrame.bind(window)
+    : (cb) => window.setTimeout(cb, 16);
+  let detailsBatchJob = 0;
+
+  function setDetailsListOpen(detailsList, nextOpen) {
+    detailsBatchJob += 1;
+    const jobId = detailsBatchJob;
+    const pending = [];
+    for (const details of detailsList) {
+      if (details.open === nextOpen) continue;
+      pending.push(details);
+    }
+    if (!pending.length) return;
+
+    function applyBatch(startIndex) {
+      if (jobId !== detailsBatchJob) return;
+      const endIndex = Math.min(startIndex + DETAILS_BATCH_SIZE, pending.length);
+      for (let i = startIndex; i < endIndex; i += 1) {
+        pending[i].open = nextOpen;
+      }
+      if (endIndex < pending.length) {
+        scheduleFrame(() => applyBatch(endIndex));
+      }
+    }
+
+    applyBatch(0);
+  }
+
+  function setAllDetailsOpen(nextOpen) {
+    setDetailsListOpen(allDetails, nextOpen);
+  }
+
   if (expandButton) {
-    expandButton.addEventListener("click", () => allDetails.forEach((d) => { d.open = true; }));
+    expandButton.addEventListener("click", () => setAllDetailsOpen(true));
   }
   if (collapseButton) {
-    collapseButton.addEventListener("click", () => allDetails.forEach((d) => { d.open = false; }));
+    collapseButton.addEventListener("click", () => setAllDetailsOpen(false));
   }
 
   // Marcacao CGDI e tags (persistidas no localStorage)
   const KEY = "cgdi_marked_ids_v1";
   const TAGS_KEY = "node_free_tags_v1";
   const cgdiSwitch = document.getElementById("cgdi");
+  const cgdiCountChip = document.getElementById("cgdi-count-chip");
   const searchInput = document.getElementById("search");
   const searchMode = document.getElementById("search-mode");
   const allNodes = Array.from(document.querySelectorAll("li.node"));
-  let cgdiMode = Boolean(cgdiSwitch?.checked);
+  const nodeById = new Map();
+
+  allNodes.forEach((li) => {
+    const id = li.dataset.id;
+    if (id) nodeById.set(id, li);
+  });
+  const AUTO_CGDI_IDS = new Set([
+    "08b15d3dea76",
+    "0ee6b4385c80",
+    "13ff8527df19",
+    "17b1e7c2b5dc",
+    "893263484fe7",
+    "8b8e1e0c8871",
+    "96ec5f64ccf5",
+    "b77ddd770929",
+    "d80251b8f3ed",
+    "e92315579aea",
+    "eff547fc6095",
+  ]);
+  const AUTO_CGDI_ROOT_HREF = "https://www.gov.br/inpi/pt-br/uso-estrategico-da-pi/inpi-para-empreender-e-inovar";
+  const autoCgdiRootNode = allNodes.find((li) => {
+    const href = li.querySelector(":scope > details > summary > .row > a.go, :scope > .row > a.go")?.getAttribute("href") || "";
+    return href.trim() === AUTO_CGDI_ROOT_HREF;
+  });
+  if (autoCgdiRootNode) {
+    const rootId = autoCgdiRootNode.dataset.id;
+    if (rootId) AUTO_CGDI_IDS.add(rootId);
+    autoCgdiRootNode.querySelectorAll("li.node[data-id]").forEach((li) => {
+      const id = li.dataset.id;
+      if (id) AUTO_CGDI_IDS.add(id);
+    });
+  }
+  const autoCgdiNodes = [];
+  const autoCgdiDetails = [];
+  const autoCgdiDetailsSet = new Set();
+  AUTO_CGDI_IDS.forEach((id) => {
+    const li = nodeById.get(id);
+    if (!li) return;
+    autoCgdiNodes.push(li);
+    let cur = li.parentElement;
+    while (cur) {
+      if (cur.tagName === "DETAILS") autoCgdiDetailsSet.add(cur);
+      cur = cur.parentElement;
+    }
+  });
+  autoCgdiDetails.push(...autoCgdiDetailsSet);
+  let autoCgdiEnabled = Boolean(cgdiSwitch?.checked);
+  let cgdiMode = autoCgdiEnabled;
 
   // Carrega e salva os ids marcados como CGDI
   function loadSet() {
@@ -587,22 +669,91 @@
   // Prepara cache de busca para reduzir custo em cada digitacao
   const marked = loadSet();
   const nodeTags = loadTags();
+  function getNodeTagsTextById(id) {
+    return Array.isArray(nodeTags[id]) ? nodeTags[id].join(" ").toLowerCase() : "";
+  }
+  function getTextBigrams(text) {
+    if (!text || text.length < 2) return [];
+    const grams = new Set();
+    for (let i = 0; i < text.length - 1; i += 1) {
+      grams.add(text.slice(i, i + 2));
+    }
+    return Array.from(grams);
+  }
+  function addItemToBigramIndex(indexMap, grams, item) {
+    grams.forEach((gram) => {
+      let bucket = indexMap.get(gram);
+      if (!bucket) {
+        bucket = new Set();
+        indexMap.set(gram, bucket);
+      }
+      bucket.add(item);
+    });
+  }
+  function removeItemFromBigramIndex(indexMap, grams, item) {
+    grams.forEach((gram) => {
+      const bucket = indexMap.get(gram);
+      if (!bucket) return;
+      bucket.delete(item);
+      if (!bucket.size) indexMap.delete(gram);
+    });
+  }
+  const contentBigramIndex = new Map();
+  const tagsBigramIndex = new Map();
   const searchIndex = allNodes.map((li) => {
+    const id = li.dataset.id || "";
     const name = (li.querySelector(".name")?.textContent || "").toLowerCase();
     const link = (li.querySelector("a.go")?.getAttribute("href") || "").toLowerCase();
-    return { li, text: `${name} ${link}` };
-  });
+    const baseText = `${name} ${link}`.trim();
+    const tagsText = getNodeTagsTextById(id);
 
-  // Texto usado na busca de conteudo (nome + link + tags)
-  function getNodeSearchText(item) {
-    const id = item.li.dataset.id;
-    const tags = Array.isArray(nodeTags[id]) ? nodeTags[id].join(" ").toLowerCase() : "";
-    return `${item.text} ${tags}`;
+    const ancestorNodes = [];
+    const ancestorDetails = [];
+    let cur = li;
+    while (cur) {
+      if (cur.matches && cur.matches("li.node")) ancestorNodes.push(cur);
+      if (cur.tagName === "DETAILS") ancestorDetails.push(cur);
+      cur = cur.parentElement;
+    }
+
+    const item = {
+      li,
+      id,
+      baseText,
+      tagsText,
+      searchText: tagsText ? `${baseText} ${tagsText}` : baseText,
+      contentBigrams: [],
+      tagsBigrams: [],
+      ancestorNodes,
+      ancestorDetails
+    };
+    item.contentBigrams = getTextBigrams(item.searchText);
+    item.tagsBigrams = getTextBigrams(item.tagsText);
+    addItemToBigramIndex(contentBigramIndex, item.contentBigrams, item);
+    addItemToBigramIndex(tagsBigramIndex, item.tagsBigrams, item);
+    return item;
+  });
+  const searchItemByNode = new WeakMap();
+  searchIndex.forEach((item) => searchItemByNode.set(item.li, item));
+
+  function refreshSearchItemForNode(li) {
+    const item = searchItemByNode.get(li);
+    if (!item) return;
+    removeItemFromBigramIndex(contentBigramIndex, item.contentBigrams, item);
+    removeItemFromBigramIndex(tagsBigramIndex, item.tagsBigrams, item);
+    item.tagsText = getNodeTagsTextById(item.id);
+    item.searchText = item.tagsText ? `${item.baseText} ${item.tagsText}` : item.baseText;
+    item.contentBigrams = getTextBigrams(item.searchText);
+    item.tagsBigrams = getTextBigrams(item.tagsText);
+    addItemToBigramIndex(contentBigramIndex, item.contentBigrams, item);
+    addItemToBigramIndex(tagsBigramIndex, item.tagsBigrams, item);
   }
-  // Texto usado na busca apenas por tags
-  function getNodeTagsText(item) {
-    const id = item.li.dataset.id;
-    return Array.isArray(nodeTags[id]) ? nodeTags[id].join(" ").toLowerCase() : "";
+
+  function resetSearchCache() {
+    lastSearchQuery = "";
+    lastSearchMode = "";
+    lastSearchMatches = searchIndex;
+    searchResultCache.clear();
   }
 
   // Recupera a linha visual principal de um no
@@ -671,8 +822,10 @@
       const holder = document.createElement("span");
       holder.className = "node-tags";
       holder.innerHTML = '<span class="node-tag-list"></span><input class="node-tag-input" type="text" placeholder="+tag" />';
-      ensureRowRight(row).appendChild(holder);
-      normalizeRowLayout(li);
+      const rowRight = ensureRowRight(row);
+      const badge = rowRight.querySelector(":scope > .cgdi-badge");
+      if (badge) rowRight.insertBefore(holder, badge);
+      else rowRight.appendChild(holder);
       renderNodeTags(li);
     });
   }
@@ -696,6 +849,11 @@
     saveTags(nodeTags);
     input.value = "";
     renderNodeTags(li);
+    refreshSearchItemForNode(li);
+    resetSearchCache();
+    if (searchInput && (searchInput.value || "").trim().length >= 2) {
+      runSearch(searchInput.value || "");
+    }
   });
 
   // Remove uma tag ao clicar no botao "x"
@@ -710,6 +868,11 @@
     if (nodeTags[id].length === 0) delete nodeTags[id];
     saveTags(nodeTags);
     renderNodeTags(li);
+    refreshSearchItemForNode(li);
+    resetSearchCache();
+    if (searchInput && (searchInput.value || "").trim().length >= 2) {
+      runSearch(searchInput.value || "");
+    }
   });
 
   // Atualiza classe/etiqueta visual de um no marcado como CGDI
@@ -721,30 +884,62 @@
         badge = document.createElement("span");
         badge.className = "cgdi-badge";
         badge.textContent = "CGDI";
-        const meta = li.querySelector(".meta");
-        if (meta) meta.insertAdjacentElement("afterend", badge);
-        else {
-          const row = getRowForNode(li);
-          if (row) ensureRowRight(row).appendChild(badge);
-        }
+        const row = getRowForNode(li);
+        if (row) ensureRowRight(row).appendChild(badge);
       }
     } else if (badge) {
       badge.remove();
     }
-    normalizeRowLayout(li);
+  }
+
+  function isNodeMarkedByCgdi(id) {
+    if (!id) return false;
+    if (marked.has(id)) return true;
+    return autoCgdiEnabled && AUTO_CGDI_IDS.has(id);
+  }
+
+  function updateCgdiCountChip() {
+    if (!cgdiCountChip) return;
+    const total = document.querySelectorAll("li.node.cgdi").length;
+    const label = total === 1 ? "pagina" : "paginas";
+    cgdiCountChip.textContent = `${total.toLocaleString("pt-BR")} ${label}`;
+  }
+
+  function syncAutoCgdiToggle(expandPaths) {
+    autoCgdiNodes.forEach((li) => {
+      const id = li.dataset.id;
+      applyMarkedToNode(li, isNodeMarkedByCgdi(id));
+    });
+    if (expandPaths && autoCgdiEnabled) {
+      setDetailsListOpen(autoCgdiDetails, true);
+    }
+    updateCgdiCountChip();
   }
 
   // Aplica marcacoes persistidas em todos os nos
   function applyMarked() {
-    allNodes.forEach((li) => {
-      applyMarkedToNode(li, marked.has(li.dataset.id));
-    });
+    if (!marked.size) return;
+    let hasInvalidIds = false;
+    for (const id of Array.from(marked)) {
+      const li = nodeById.get(id);
+      if (!li) {
+        marked.delete(id);
+        hasInvalidIds = true;
+        continue;
+      }
+      applyMarkedToNode(li, isNodeMarkedByCgdi(id));
+    }
+    if (hasInvalidIds) saveSet(marked);
   }
   applyMarked();
+  syncAutoCgdiToggle(autoCgdiEnabled);
 
   if (cgdiSwitch) {
     cgdiSwitch.addEventListener("change", () => {
-      cgdiMode = cgdiSwitch.checked;
+      autoCgdiEnabled = cgdiSwitch.checked;
+      cgdiMode = autoCgdiEnabled;
+      // Ativa destaque automatico dos nos mapeados da CGDI e abre seus caminhos.
+      syncAutoCgdiToggle(true);
     });
   }
 
@@ -761,47 +956,140 @@
       const id = li.dataset.id;
       if (marked.has(id)) marked.delete(id); else marked.add(id);
       saveSet(marked);
-      applyMarkedToNode(li, marked.has(id));
+      applyMarkedToNode(li, isNodeMarkedByCgdi(id));
+      updateCgdiCountChip();
     }
   }, true);
 
   // Busca otimizada: debounce + indice em cache + minimo de caracteres
   let searchTimer = null;
   let lastKept = [];
+  let lastKeptSet = new Set();
+  let lastHighlighted = [];
+  let lastHighlightedSet = new Set();
+  let lastSearchQuery = "";
+  let lastSearchMode = "";
+  let lastSearchMatches = searchIndex;
+  const SEARCH_CACHE_LIMIT = 12;
+  const searchResultCache = new Map();
+
+  function getSearchCacheEntry(key) {
+    const cached = searchResultCache.get(key);
+    if (!cached) return null;
+    // Atualiza ordem para manter LRU simples com Map.
+    searchResultCache.delete(key);
+    searchResultCache.set(key, cached);
+    return cached;
+  }
+
+  function setSearchCacheEntry(key, value) {
+    if (searchResultCache.has(key)) searchResultCache.delete(key);
+    searchResultCache.set(key, value);
+    if (searchResultCache.size <= SEARCH_CACHE_LIMIT) return;
+    const oldestKey = searchResultCache.keys().next().value;
+    searchResultCache.delete(oldestKey);
+  }
 
   // Limpa destaque e estado visual da busca anterior
   function clearSearchState() {
-    lastKept.forEach((li) => li.classList.remove("highlight", "search-keep"));
+    lastHighlighted.forEach((li) => li.classList.remove("highlight"));
+    lastKept.forEach((li) => li.classList.remove("search-keep"));
+    lastHighlighted = [];
+    lastHighlightedSet.clear();
     lastKept = [];
+    lastKeptSet.clear();
     document.body.classList.remove("search-active");
+  }
+
+  function applySearchVisualState(result) {
+    const nextKeep = result.keepNodes;
+    const nextHighlights = result.highlightNodes;
+    const nextKeepSet = new Set(nextKeep);
+    const nextHighlightSet = new Set(nextHighlights);
+
+    lastKept.forEach((node) => {
+      if (!nextKeepSet.has(node)) node.classList.remove("search-keep");
+    });
+    lastHighlighted.forEach((node) => {
+      if (!nextHighlightSet.has(node)) node.classList.remove("highlight");
+    });
+
+    nextKeep.forEach((node) => {
+      if (!lastKeptSet.has(node)) node.classList.add("search-keep");
+    });
+    nextHighlights.forEach((node) => {
+      if (!lastHighlightedSet.has(node)) node.classList.add("highlight");
+    });
+
+    result.detailsToOpen.forEach((details) => {
+      if (!details.open) details.open = true;
+    });
+
+    lastKept = nextKeep;
+    lastKeptSet = nextKeepSet;
+    lastHighlighted = nextHighlights;
+    lastHighlightedSet = nextHighlightSet;
+    document.body.classList.add("search-active");
   }
 
   // Executa busca por conteudo ou por tags, mantendo ancestrais visiveis
   function runSearch(rawQuery) {
     if (!searchMode) return;
     const q = (rawQuery || "").trim().toLowerCase();
-    clearSearchState();
-    if (q.length < 2) return;
-
-    const keep = new Set();
-    for (const item of searchIndex) {
-      const haystack = searchMode.value === "tags" ? getNodeTagsText(item) : getNodeSearchText(item);
-      if (!haystack.includes(q)) continue;
-
-      let cur = item.li;
-      while (cur) {
-        if (cur.matches && cur.matches("li.node") && !keep.has(cur)) {
-          keep.add(cur);
-          cur.classList.add("search-keep");
-          lastKept.push(cur);
-        }
-        if (cur.tagName === "DETAILS") cur.open = true;
-        cur = cur.parentElement;
-      }
-      item.li.classList.add("highlight");
+    const mode = searchMode.value === "tags" ? "tags" : "content";
+    if (q.length < 2) {
+      clearSearchState();
+      resetSearchCache();
+      return;
     }
 
-    document.body.classList.add("search-active");
+    const cacheKey = `${mode}|${q}`;
+    let result = getSearchCacheEntry(cacheKey);
+
+    if (!result) {
+      // Em digitacao incremental (ex.: "pa" -> "pat"), restringe varredura aos matches anteriores.
+      // Em consultas novas, aplica pre-filtro por bigrama (2 chars) para evitar varrer a arvore inteira.
+      const canReusePrefix = mode === lastSearchMode && q.startsWith(lastSearchQuery);
+      const bigramIndex = mode === "tags" ? tagsBigramIndex : contentBigramIndex;
+      const source = canReusePrefix
+        ? lastSearchMatches
+        : (bigramIndex.get(q.slice(0, 2)) || []);
+
+      const matches = [];
+      for (const item of source) {
+        const haystack = mode === "tags" ? item.tagsText : item.searchText;
+        if (!haystack.includes(q)) continue;
+        matches.push(item);
+      }
+
+      const keep = new Set();
+      const openedDetails = new Set();
+      const keepNodes = [];
+      const detailsToOpen = [];
+
+      for (const item of matches) {
+        for (const node of item.ancestorNodes) {
+          if (keep.has(node)) continue;
+          keep.add(node);
+          keepNodes.push(node);
+        }
+        for (const details of item.ancestorDetails) {
+          if (openedDetails.has(details)) continue;
+          openedDetails.add(details);
+          detailsToOpen.push(details);
+        }
+      }
+
+      const highlightNodes = matches.map((item) => item.li);
+      result = { matches, keepNodes, detailsToOpen, highlightNodes };
+      setSearchCacheEntry(cacheKey, result);
+    }
+
+    lastSearchQuery = q;
+    lastSearchMode = mode;
+    lastSearchMatches = result.matches;
+
+    applySearchVisualState(result);
   }
 
   // Recalcula busca em digitacao e troca de modo

@@ -469,13 +469,15 @@ body.menu-open {
 .inventory-toolbar {
     display: flex;
     flex-direction: column;
-    gap: var(--stack-gap-md);
+    gap: clamp(1.25rem, 2vw, 1.5rem);
 }
 
 .inventory-toolbar-top {
-    display: grid;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 0.875rem;
-    align-items: end;
+    flex-wrap: nowrap;
 }
 
 .inventory-title {
@@ -484,6 +486,9 @@ body.menu-open {
     font-size: clamp(1.125rem, 1.8vw, 1.5rem);
     line-height: 1.2;
     font-weight: 600;
+    text-align: left;
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .search-box {
@@ -491,7 +496,7 @@ body.menu-open {
     grid-template-columns: auto auto minmax(0, 1fr);
     align-items: center;
     width: 100%;
-    min-height: 2.75rem;
+    min-height: 2.125rem;
     border: 1px solid var(--surface-control-border);
     border-radius: 0.875rem;
     background: var(--dt-color-neutral-light-150);
@@ -514,7 +519,7 @@ body.menu-open {
 .search-box-icon {
     width: 2.5rem;
     min-width: 2.5rem;
-    min-height: 2.75rem;
+    min-height: 2.125rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -535,7 +540,7 @@ body.menu-open {
 
 #search-mode {
     height: 100%;
-    min-height: 2.75rem;
+    min-height: 2.125rem;
     min-width: 7.5rem;
     border: 0;
     border-right: 1px solid var(--line);
@@ -561,7 +566,7 @@ body.menu-open {
     flex: 1 1 auto;
     min-width: 0;
     height: 100%;
-    min-height: 2.75rem;
+    min-height: 2.125rem;
     border: 0;
     background: transparent;
     color: var(--dt-color-neutral-light-700);
@@ -583,15 +588,21 @@ body.menu-open {
 .inventory-toolbar-actions {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 0.75rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .toolbar-buttons {
     display: inline-flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+    flex: 0 0 auto;
+}
+
+.inventory-toolbar-actions .search-box {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .toolbar-button {
@@ -631,12 +642,6 @@ body.menu-open {
     border: 0;
 }
 
-@media (min-width: 960px) {
-    .inventory-toolbar-top {
-        grid-template-columns: minmax(0, 1fr) minmax(20rem, 24rem);
-    }
-}
-
 @media (max-width: 560px) {
     .site-header-component {
         justify-content: flex-start;
@@ -664,6 +669,11 @@ body.menu-open {
 
     .inventory-toolbar-actions {
         align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .inventory-toolbar-actions .search-box {
+        width: 100%;
     }
 
     .cgdi-switch {
@@ -673,13 +683,23 @@ body.menu-open {
 
 /* Switch de modo CGDI */
 .cgdi-switch {
-    margin-left: auto;
     display: inline-flex;
     align-items: center;
     gap: 8px;
     color: var(--muted);
     font-size: 12px;
     user-select: none;
+}
+
+.cgdi-switch-label {
+    white-space: nowrap;
+}
+
+.cgdi-count-chip {
+    background: var(--dt-color-blue-light-300);
+    color: var(--dt-color-blue-light-800);
+    padding: 2px 8px;
+    margin-right: 2px;
 }
 
 .cgdi-switch input {

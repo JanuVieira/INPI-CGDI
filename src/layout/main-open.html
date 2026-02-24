@@ -3,6 +3,18 @@
     <section class="inventory-toolbar" aria-label="Controles do inventario">
         <div class="inventory-toolbar-top">
             <h1 class="inventory-title">Inventario de conteudo - Site INPI</h1>
+            <label class="cgdi-switch" for="cgdi">
+                <span class="cgdi-switch-label">Destacar CGDI</span>
+                <span id="cgdi-count-chip" class="node-tag cgdi-count-chip" aria-live="polite">0 paginas</span>
+                <input id="cgdi" type="checkbox" role="switch" aria-label="Ativar destaque CGDI"/>
+                <span class="slider" aria-hidden="true"></span>
+            </label>
+        </div>
+        <div class="inventory-toolbar-actions">
+            <div class="toolbar-buttons">
+                <button id="expand" class="toolbar-button" type="button">Expandir tudo</button>
+                <button id="collapse" class="toolbar-button" type="button">Recolher tudo</button>
+            </div>
             <div class="search-box" role="search">
                 <span class="search-box-icon" aria-hidden="true">
                     <svg class="search-box-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true">
@@ -15,19 +27,8 @@
                     <option value="content">Conteudo</option>
                     <option value="tags">Tags</option>
                 </select>
-                <input id="search" placeholder="Buscar." aria-label="Buscar no inventario"/>
+                <input id="search" placeholder="Digite sua busca..." aria-label="Digite sua busca..."/>
             </div>
-        </div>
-        <div class="inventory-toolbar-actions">
-            <div class="toolbar-buttons">
-                <button id="expand" class="toolbar-button" type="button">Expandir tudo</button>
-                <button id="collapse" class="toolbar-button" type="button">Recolher tudo</button>
-            </div>
-            <label class="cgdi-switch" for="cgdi">
-                <span>Mostrar somente paginas CGDI</span>
-                <input id="cgdi" type="checkbox" role="switch" aria-label="Ativar filtro CGDI"/>
-                <span class="slider" aria-hidden="true"></span>
-            </label>
         </div>
     </section>
     <section class="inventory-tree" aria-label="Arvore de conteudo">
