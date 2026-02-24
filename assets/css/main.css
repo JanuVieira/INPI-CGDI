@@ -770,9 +770,9 @@ body.menu-open {
 .inventory-tree ul:not(.root) > li::before {
     content: "";
     position: absolute;
-    left: calc(var(--tree-branch) * -1);
+    left: calc((var(--tree-branch) + var(--indent)) * -1);
     top: 14px;
-    width: var(--tree-branch);
+    width: calc(var(--tree-branch) + var(--indent));
     border-top: 1px solid var(--line);
 }
 
