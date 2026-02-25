@@ -316,7 +316,7 @@
                 <a class="about-inline-link about-arrow-link" href="https://drive.google.com/drive/folders/1fCH731ThL_G1rBG8LovzQSz_XlC1GPRI?hl=pt-br" target="_blank" rel="noopener noreferrer" aria-label="Abrir relatorio de dezembro de 2025">dezembro/2025</a>
               </li>
               <li class="about-reports-item">
-                <a class="about-inline-link about-arrow-link" href="https://drive.google.com/file/d/14hVVJuZPoMkbzIjGXVceEmp4XTvwjw6r/view?usp=sharing" target="_blank" rel="noopener noreferrer" aria-label="Abrir relatorio de janeiro de 2026">janeiro/2026</a>
+                <a class="about-inline-link about-arrow-link" href="https://drive.google.com/drive/folders/1fCH731ThL_G1rBG8LovzQSz_XlC1GPRI?hl=pt-br" target="_blank" rel="noopener noreferrer" aria-label="Abrir relatorio de janeiro de 2026">janeiro/2026</a>
               </li>
             </ul>
           </section>
@@ -542,14 +542,32 @@
   });
 
   // Acoes globais para expandir/recolher toda a arvore
-  const allDetails = Array.from(document.querySelectorAll("details"));
+  let allDetails = null;
   const expandButton = document.getElementById("expand");
   const collapseButton = document.getElementById("collapse");
   const DETAILS_BATCH_SIZE = 320;
+  const NODE_INIT_BATCH_SIZE = 240;
+  const SEARCH_INDEX_BATCH_SIZE = 260;
   const scheduleFrame = window.requestAnimationFrame
     ? window.requestAnimationFrame.bind(window)
     : (cb) => window.setTimeout(cb, 16);
   let detailsBatchJob = 0;
+
+  function runBatched(items, batchSize, handler, onDone) {
+    let cursor = 0;
+    function runBatch() {
+      const end = Math.min(cursor + batchSize, items.length);
+      for (; cursor < end; cursor += 1) {
+        handler(items[cursor], cursor);
+      }
+      if (cursor < items.length) {
+        scheduleFrame(runBatch);
+        return;
+      }
+      if (typeof onDone === "function") onDone();
+    }
+    runBatch();
+  }
 
   function setDetailsListOpen(detailsList, nextOpen) {
     detailsBatchJob += 1;
@@ -576,6 +594,9 @@
   }
 
   function setAllDetailsOpen(nextOpen) {
+    if (!allDetails) {
+      allDetails = Array.from(document.querySelectorAll("details"));
+    }
     setDetailsListOpen(allDetails, nextOpen);
   }
 
@@ -589,6 +610,7 @@
   // Marcacao CGDI e tags (persistidas no localStorage)
   const KEY = "cgdi_marked_ids_v1";
   const TAGS_KEY = "node_free_tags_v1";
+  const URL_STATE_KEY = "view";
   const cgdiSwitch = document.getElementById("cgdi");
   const cgdiCountChip = document.getElementById("cgdi-count-chip");
   const searchInput = document.getElementById("search");
@@ -654,6 +676,92 @@
     localStorage.setItem(KEY, JSON.stringify(Array.from(set)));
   }
 
+  function encodeBase64Url(rawText) {
+    return btoa(rawText)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/g, "");
+  }
+
+  function decodeBase64Url(encodedText) {
+    const normalized = encodedText.replace(/-/g, "+").replace(/_/g, "/");
+    const padLength = (4 - (normalized.length % 4)) % 4;
+    const padded = `${normalized}${"=".repeat(padLength)}`;
+    return atob(padded);
+  }
+
+  function readSharedTokenFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const fromSearch = params.get(URL_STATE_KEY);
+    if (fromSearch) return fromSearch;
+
+    const rawHash = (window.location.hash || "").replace(/^#\??/, "");
+    if (!rawHash) return null;
+    const hashParams = new URLSearchParams(rawHash);
+    return hashParams.get(URL_STATE_KEY);
+  }
+
+  function removeSharedTokenFromHash() {
+    const rawHash = (window.location.hash || "").replace(/^#\??/, "");
+    if (!rawHash) return "";
+    const hashParams = new URLSearchParams(rawHash);
+    if (!hashParams.has(URL_STATE_KEY)) return window.location.hash || "";
+    hashParams.delete(URL_STATE_KEY);
+    const cleaned = hashParams.toString();
+    return cleaned ? `#${cleaned}` : "";
+  }
+
+  function loadSharedStateFromUrl() {
+    try {
+      const rawState = readSharedTokenFromUrl();
+      if (!rawState) return null;
+      const parsed = JSON.parse(decodeBase64Url(rawState));
+      const markedIds = Array.isArray(parsed?.m)
+        ? parsed.m.filter((id) => typeof id === "string")
+        : [];
+      const autoEnabled = parsed?.a === 1 || parsed?.a === true;
+      return { markedIds, autoEnabled };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function syncSharedStateToUrl() {
+    const state = {
+      v: 1,
+      a: autoCgdiEnabled ? 1 : 0,
+      m: Array.from(marked).filter((id) => typeof id === "string").sort()
+    };
+    const token = (!state.a && state.m.length === 0)
+      ? null
+      : encodeBase64Url(JSON.stringify(state));
+    const params = new URLSearchParams(window.location.search);
+    if (!token) {
+      params.delete(URL_STATE_KEY);
+    } else {
+      params.set(URL_STATE_KEY, token);
+    }
+    const query = params.toString();
+    const cleanHash = removeSharedTokenFromHash();
+    const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${cleanHash}`;
+
+    try {
+      if (!window.history?.replaceState) throw new Error("replaceState indisponivel");
+      window.history.replaceState(null, "", nextUrl);
+    } catch (e) {
+      const hashParams = new URLSearchParams((window.location.hash || "").replace(/^#\??/, ""));
+      if (!token) hashParams.delete(URL_STATE_KEY);
+      else hashParams.set(URL_STATE_KEY, token);
+      const nextHash = hashParams.toString();
+      window.location.hash = nextHash;
+    }
+  }
+
+  function persistMarkedSet() {
+    saveSet(marked);
+    syncSharedStateToUrl();
+  }
+
   // Carrega e salva as tags livres por no
   function loadTags() {
     try {
@@ -669,6 +777,17 @@
   // Prepara cache de busca para reduzir custo em cada digitacao
   const marked = loadSet();
   const nodeTags = loadTags();
+  const sharedState = loadSharedStateFromUrl();
+  if (sharedState) {
+    marked.clear();
+    sharedState.markedIds.forEach((id) => {
+      if (nodeById.has(id)) marked.add(id);
+    });
+    autoCgdiEnabled = Boolean(sharedState.autoEnabled);
+    cgdiMode = autoCgdiEnabled;
+    if (cgdiSwitch) cgdiSwitch.checked = autoCgdiEnabled;
+    saveSet(marked);
+  }
   function getNodeTagsTextById(id) {
     return Array.isArray(nodeTags[id]) ? nodeTags[id].join(" ").toLowerCase() : "";
   }
@@ -700,7 +819,13 @@
   }
   const contentBigramIndex = new Map();
   const tagsBigramIndex = new Map();
-  const searchIndex = allNodes.map((li) => {
+  const searchIndex = [];
+  let searchIndexBuilt = false;
+  let searchIndexBuilding = false;
+  let searchIndexCursor = 0;
+  const searchIndexReadyCallbacks = [];
+
+  function buildSearchItem(li) {
     const id = li.dataset.id || "";
     const name = (li.querySelector(".name")?.textContent || "").toLowerCase();
     const link = (li.querySelector("a.go")?.getAttribute("href") || "").toLowerCase();
@@ -732,11 +857,50 @@
     addItemToBigramIndex(contentBigramIndex, item.contentBigrams, item);
     addItemToBigramIndex(tagsBigramIndex, item.tagsBigrams, item);
     return item;
-  });
+  }
+
   const searchItemByNode = new WeakMap();
-  searchIndex.forEach((item) => searchItemByNode.set(item.li, item));
+
+  function ensureSearchIndexBuilt(onReady) {
+    if (typeof onReady === "function") {
+      if (searchIndexBuilt) {
+        onReady();
+        return;
+      }
+      searchIndexReadyCallbacks.push(onReady);
+    }
+
+    if (searchIndexBuilt || searchIndexBuilding) return;
+
+    searchIndexBuilding = true;
+    function buildBatch() {
+      const end = Math.min(searchIndexCursor + SEARCH_INDEX_BATCH_SIZE, allNodes.length);
+      for (; searchIndexCursor < end; searchIndexCursor += 1) {
+        const li = allNodes[searchIndexCursor];
+        const item = buildSearchItem(li);
+        searchIndex.push(item);
+        searchItemByNode.set(item.li, item);
+      }
+
+      if (searchIndexCursor < allNodes.length) {
+        scheduleFrame(buildBatch);
+        return;
+      }
+
+      searchIndexBuilt = true;
+      searchIndexBuilding = false;
+      lastSearchMatches = searchIndex;
+      while (searchIndexReadyCallbacks.length) {
+        const cb = searchIndexReadyCallbacks.shift();
+        if (typeof cb === "function") cb();
+      }
+    }
+
+    buildBatch();
+  }
 
   function refreshSearchItemForNode(li) {
+    if (!searchIndexBuilt) return;
     const item = searchItemByNode.get(li);
     if (!item) return;
     removeItemFromBigramIndex(contentBigramIndex, item.contentBigrams, item);
@@ -752,7 +916,7 @@
   function resetSearchCache() {
     lastSearchQuery = "";
     lastSearchMode = "";
-    lastSearchMatches = searchIndex;
+    lastSearchMatches = searchIndexBuilt ? searchIndex : [];
     searchResultCache.clear();
   }
 
@@ -797,7 +961,7 @@
     }
   }
 
-  allNodes.forEach((li) => normalizeRowLayout(li));
+  runBatched(allNodes, NODE_INIT_BATCH_SIZE, normalizeRowLayout, initNodeTags);
 
   // Renderiza as tags exibidas no no
   function renderNodeTags(li) {
@@ -812,25 +976,25 @@
   }
 
   // Injeta controles de tags em todos os nos com link
-  function initNodeTags() {
-    allNodes.forEach((li) => {
-      const row = getRowForNode(li);
-      if (!row || row.querySelector(".node-tags")) return;
-      const linkEl = row.querySelector(".go, .nolink");
-      if (!linkEl) return;
+  function initNodeTagsForNode(li) {
+    const row = getRowForNode(li);
+    if (!row || row.querySelector(".node-tags")) return;
+    const linkEl = row.querySelector(".go, .nolink");
+    if (!linkEl) return;
 
-      const holder = document.createElement("span");
-      holder.className = "node-tags";
-      holder.innerHTML = '<span class="node-tag-list"></span><input class="node-tag-input" type="text" placeholder="+tag" />';
-      const rowRight = ensureRowRight(row);
-      const badge = rowRight.querySelector(":scope > .cgdi-badge");
-      if (badge) rowRight.insertBefore(holder, badge);
-      else rowRight.appendChild(holder);
-      renderNodeTags(li);
-    });
+    const holder = document.createElement("span");
+    holder.className = "node-tags";
+    holder.innerHTML = '<span class="node-tag-list"></span><input class="node-tag-input" type="text" placeholder="+tag" />';
+    const rowRight = ensureRowRight(row);
+    const badge = rowRight.querySelector(":scope > .cgdi-badge");
+    if (badge) rowRight.insertBefore(holder, badge);
+    else rowRight.appendChild(holder);
+    renderNodeTags(li);
   }
 
-  initNodeTags();
+  function initNodeTags() {
+    runBatched(allNodes, NODE_INIT_BATCH_SIZE, initNodeTagsForNode);
+  }
 
   // Adiciona tag com Enter ou virgula
   document.addEventListener("keydown", (e) => {
@@ -900,7 +1064,16 @@
 
   function updateCgdiCountChip() {
     if (!cgdiCountChip) return;
-    const total = document.querySelectorAll("li.node.cgdi").length;
+    const ids = new Set();
+    if (autoCgdiEnabled) {
+      AUTO_CGDI_IDS.forEach((id) => {
+        if (nodeById.has(id)) ids.add(id);
+      });
+    }
+    marked.forEach((id) => {
+      if (nodeById.has(id)) ids.add(id);
+    });
+    const total = ids.size;
     const label = total === 1 ? "pagina" : "paginas";
     cgdiCountChip.textContent = `${total.toLocaleString("pt-BR")} ${label}`;
   }
@@ -929,10 +1102,11 @@
       }
       applyMarkedToNode(li, isNodeMarkedByCgdi(id));
     }
-    if (hasInvalidIds) saveSet(marked);
+    if (hasInvalidIds) persistMarkedSet();
   }
   applyMarked();
   syncAutoCgdiToggle(autoCgdiEnabled);
+  if (sharedState) syncSharedStateToUrl();
 
   if (cgdiSwitch) {
     cgdiSwitch.addEventListener("change", () => {
@@ -940,6 +1114,7 @@
       cgdiMode = autoCgdiEnabled;
       // Ativa destaque automatico dos nos mapeados da CGDI e abre seus caminhos.
       syncAutoCgdiToggle(true);
+      syncSharedStateToUrl();
     });
   }
 
@@ -955,7 +1130,7 @@
       e.stopPropagation();
       const id = li.dataset.id;
       if (marked.has(id)) marked.delete(id); else marked.add(id);
-      saveSet(marked);
+      persistMarkedSet();
       applyMarkedToNode(li, isNodeMarkedByCgdi(id));
       updateCgdiCountChip();
     }
@@ -1040,6 +1215,10 @@
     if (q.length < 2) {
       clearSearchState();
       resetSearchCache();
+      return;
+    }
+    if (!searchIndexBuilt) {
+      ensureSearchIndexBuilt(() => runSearch(rawQuery));
       return;
     }
 
